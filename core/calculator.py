@@ -1,51 +1,39 @@
-from __future__ import annotations
 from dataclasses import dataclass
-from enum import Enum
-from typing import Optional
 from datetime import datetime
 
-
-class ActionType(Enum):
-    ADD = 'add'
-    SUBTRACT = 'sub'
-    SET = 'set'
-
-    @staticmethod
-    def value_from(name: str) -> Optional[ActionType]:
-        return next(filter(
-            lambda i: i.value == name,
-            (i for i in ActionType)
-        ))
-
-
-class Sprite(Enum):
-    BIRD = 'assets/bird.gif'
-    CAKE = 'assets/cake.gif'
-    ELEPHANT = 'assets/elephant.gif'
-    FISH = 'assets/fish.gif'
-    GAME = 'assets/game.gif'
-    HEARTBEAT = 'assets/heartbeat.gif'
-    PONY = 'assets/pony.gif'
-    SHEEP = 'assets/sheep.gif'
-    SNOW_FIGHT = 'assets/snow-fight.gif'
-    STARWARS = 'assets/starwars.gif'
-    NONE = ''
+from core.utils import Fund, Sprite, ActionType
 
 
 @dataclass
 class Calculator:
-    initial_deposit: float = 1000
-    contribution_amount: float = 23230
-    investment_timespan: int = 10
-    estimated_return: float = 120
+    initial_deposit: float = 0
+    contribution_amount: float = 0
+    investment_timespan: int = 0
+    fund: Fund = Fund.HONG_KONG_ETF
     future_balance: float = 0
-    contribution_period: int = 1
-    compound_period: int = 365
+    contribution_period: int = 12
+    compound_period: int = 12
     sprite: Sprite = Sprite.STARWARS
     goal: float = 1000
 
     def get_sprite(self):
+        """
+        Used to retrieve the sprite displayed when target investment reached
+        """
         return self.sprite.value
+
+    def get_funds(self):
+        """
+        Used to retrieve a list of available funds
+        :return:
+        """
+        return [i.value for i in Fund]
+
+    def get_selected_fund(self):
+        """
+        Retrieves the current fund selected by the user
+        """
+        return {"name": self.fund.name, "returns": self.fund.returns}
 
     def get_amount(self, field: str):
         """
@@ -55,23 +43,31 @@ class Calculator:
         """
         return getattr(self, field)
 
-    def change_amount(self, field: str, amount: float, action_string: str):
+    def change_fund(self, name: str):
+        """
+        Change the fund selected for the calculation
+        :param name: Name of the fund
+        :return:
+        """
+        self.fund = Fund.value_from(name)
+
+    def change_amount(self, field: str, value, action_string: str):
         """
         Used to change a property on the calculator. E.g. initial deposit, contribution amount e.t.c
-        :param field:
-        :param amount:
-        :param action_string:
-        :return:
+        :param field: calculator property
+        :param value: Any
+        :param action_string: ADD | SUBTRACT | SET
+        :return: the updated field value
         """
         action = ActionType.value_from(action_string)
         change = getattr(self, field)
 
         if action == ActionType.ADD:
-            change += amount
+            change += value
         elif action == ActionType.SUBTRACT:
-            change -= amount
+            change -= value
         elif action == ActionType.SET:
-            change = amount
+            change = value
 
         if change >= 0:
             setattr(self, field, change)
@@ -101,7 +97,7 @@ class Calculator:
             principal = self.initial_deposit + (self.contribution_amount * self.contribution_period * time)
             earnings = 0
             balance = principal
-            estimated_return = self.estimated_return / 100
+            estimated_return = self.fund.returns / 100
 
             if estimated_return:
                 gains = (1 + estimated_return / self.compound_period) ** (self.compound_period * time)

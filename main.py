@@ -5,6 +5,10 @@ from core.calculator import Calculator
 
 
 def main(win: Window):
+    """
+    Inject starter JavaScript
+    :param win: Window
+    """
     win.evaluate_js(
         """
         (async() => {
@@ -15,7 +19,9 @@ def main(win: Window):
             const depositSelector = document.querySelector('#initial_deposit');
             const estimatedReturnSelector = document.querySelector('#estimated_return');
             const contributionSelector = document.querySelector('#contribution_amount');
+            const fundSelector = document.querySelector('#fund');
             const spriteSelector = document.querySelector('#sprite');
+            const funds = await pywebview.api.get_funds();
 
             const updateChart = async () => {
                 const data = await pywebview.api.calculate_future_values();
@@ -44,7 +50,7 @@ def main(win: Window):
                 const max = parseFloat(dom.getAttribute('max'));
                 const oldValue = dom.dataset.value || dom.defaultValue || 0;
                 let newValue = parseFloat(dom.value.replace(/\$/, ''));
-                const step = ['investment_timespan'].includes(name) ? newValue: parseFloat(dom.getAttribute('step')) || 1;
+                const step = action === 'set' ? newValue: parseFloat(dom.getAttribute('step')) || 1;
 
                 if (isNaN(parseFloat(newValue))) {
                     newValue = oldValue;
@@ -57,17 +63,23 @@ def main(win: Window):
                 dom.value = (dom.dataset.prepend || '') + newValue + (dom.dataset.append || '');
                 await updateChart();
             };
-
+            
+            const selectedFund = await pywebview.api.get_selected_fund();
             investment_timespan.value = await pywebview.api.get_amount('investment_timespan');
             investment_timespan_text.innerHTML = investment_timespan.value + ' years';
             depositSelector.dataset.value = await pywebview.api.get_amount('initial_deposit');
             depositSelector.value = '$' + depositSelector.dataset.value;
             contributionSelector.dataset.value = await pywebview.api.get_amount('contribution_amount');
             contributionSelector.value = '$' + contributionSelector.dataset.value;
-            estimatedReturnSelector.dataset.value = await pywebview.api.get_amount('estimated_return');
+            estimatedReturnSelector.dataset.value = selectedFund.returns;
             estimatedReturnSelector.value = estimatedReturnSelector.dataset.value + '%';
             
             depositSelector.addEventListener('change', function(){ changeHandler(this) });
+            fundSelector.addEventListener('change', async function(){ 
+                await pywebview.api.change_fund(this.value);
+                estimatedReturnSelector.value = funds.find(v => v[0] === this.value)[1] + '%';
+                await updateChart();
+            });
             estimatedReturnSelector.addEventListener('change', function(){ changeHandler(this) });
             contributionSelector.addEventListener('change', function(){ changeHandler(this) });
             investment_timespan.addEventListener('change', async function () {
@@ -108,10 +120,33 @@ def main(win: Window):
                     }
                 })
             );
+            
+            funds.forEach(fund => {
+                const opt = document.createElement('option');
+                opt.value = fund[0];
+                opt.innerHTML = fund[0];
+                fundSelector.appendChild(opt);
+            });
 
+            fundSelector.value = selectedFund.name;
+            const chartData = await pywebview.api.calculate_future_values();
+            const balance = await pywebview.api.get_amount('future_balance');
+            future_balance.innerHTML = '$' + balance.toFixed(2);
+            
+            const goal = await pywebview.api.get_amount('goal');
+                
+            if (balance >= goal) {
+                const sprite = await pywebview.api.get_sprite();
+                if (sprite) {
+                    spriteSelector.src = sprite;
+                }
+            } else {
+                spriteSelector.src = '';
+            }
+            
             const chart = new Chart(ctx, {
                 type: 'bar',
-                data: await pywebview.api.calculate_future_values(),
+                data: chartData,
                 options: {
                     legend: {
                         display: false
@@ -157,5 +192,5 @@ def main(win: Window):
 
 
 if __name__ == '__main__':
-    window = webview.create_window('Financial Calculator', 'web/index.html', js_api=Calculator())
+    window = webview.create_window('Financial Calculator', 'web/index.html', js_api=Calculator(), height=800, width=1100)
     webview.start(main, window, gui='cef', debug=True)
