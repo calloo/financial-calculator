@@ -18,11 +18,11 @@ def main(win: Window):
             const spriteSelector = document.querySelector('#sprite');
 
             const updateChart = async () => {
-                const {labels, principal_dataset, earnings_dataset} = await pywebview.api.calculate_future_values();
+                const data = await pywebview.api.calculate_future_values();
 
-                chart.data.labels = labels;
-                chart.data.datasets[0].data = principal_dataset.data;
-                chart.data.datasets[1].data = earnings_dataset.data;
+                chart.data.labels = data.labels;
+                chart.data.datasets[0].data = data.datasets[0].data;
+                chart.data.datasets[1].data = data.datasets[1].data;
                 chart.update();
                 const balance = await pywebview.api.get_amount('future_balance');
                 future_balance.innerHTML = '$' + balance.toFixed(2);
@@ -109,10 +109,9 @@ def main(win: Window):
                 })
             );
 
-            const {label, ...data} = await pywebview.api.calculate_future_values();
             const chart = new Chart(ctx, {
                 type: 'bar',
-                data: {label, datasets: Object.values(data)},
+                data: await pywebview.api.calculate_future_values(),
                 options: {
                     legend: {
                         display: false

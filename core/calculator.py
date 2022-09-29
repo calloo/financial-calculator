@@ -95,6 +95,8 @@ class Calculator:
             "data": []
         }
 
+        self.future_balance = 0
+
         for time in range(1, self.investment_timespan + 1):
             principal = self.initial_deposit + (self.contribution_amount * self.contribution_period * time)
             earnings = 0
@@ -114,6 +116,5 @@ class Calculator:
 
         return {
             "labels": labels,
-            "principal_dataset": principal_dataset,
-            "earnings_dataset": earnings_dataset
+            "datasets": [principal_dataset, earnings_dataset],
         }
