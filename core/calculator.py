@@ -18,15 +18,34 @@ class ActionType(Enum):
         ))
 
 
+class Sprite(Enum):
+    BIRD = 'assets/bird.gif'
+    CAKE = 'assets/cake.gif'
+    ELEPHANT = 'assets/elephant.gif'
+    FISH = 'assets/fish.gif'
+    GAME = 'assets/game.gif'
+    HEARTBEAT = 'assets/heartbeat.gif'
+    PONY = 'assets/pony.gif'
+    SHEEP = 'assets/sheep.gif'
+    SNOW_FIGHT = 'assets/snow-fight.gif'
+    STARWARS = 'assets/starwars.gif'
+    NONE = ''
+
+
 @dataclass
 class Calculator:
-    initial_deposit: float = 0
-    contribution_amount: float = 0
-    investment_timespan: int = 0
-    estimated_return: float = 0
+    initial_deposit: float = 1000
+    contribution_amount: float = 23230
+    investment_timespan: int = 10
+    estimated_return: float = 120
     future_balance: float = 0
-    contribution_period: int = 12
-    compound_period: int = 12
+    contribution_period: int = 1
+    compound_period: int = 365
+    sprite: Sprite = Sprite.STARWARS
+    goal: float = 1000
+
+    def get_sprite(self):
+        return self.sprite.value
 
     def get_amount(self, field: str):
         """
@@ -76,7 +95,7 @@ class Calculator:
             "data": []
         }
 
-        for time in range(1, self.investment_timespan):
+        for time in range(1, self.investment_timespan + 1):
             principal = self.initial_deposit + (self.contribution_amount * self.contribution_period * time)
             earnings = 0
             balance = principal
@@ -84,8 +103,8 @@ class Calculator:
 
             if estimated_return:
                 gains = (1 + estimated_return / self.compound_period) ** (self.compound_period * time)
-                compound_earnings = self.initial_deposit + gains
-                contribution_earnings = self.contribution_amount * (gains - 1) / (self.compound_period / self.contribution_period)
+                compound_earnings = self.initial_deposit * gains
+                contribution_earnings = self.contribution_amount * (gains - 1) / (estimated_return / self.contribution_period)
                 earnings = compound_earnings + contribution_earnings - principal
                 balance = compound_earnings + contribution_earnings
 
