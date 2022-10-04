@@ -1,3 +1,2 @@
-pycairo
 PyGObject
-pywebview[qt]
+pywebview

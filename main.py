@@ -44,7 +44,7 @@ def main(win: Window):
                 }
             }
 
-            const changeHandler = async (dom, action = 'set') => {
+            const changeHandler = (dom, action = 'set') => {
                 const name = dom.getAttribute('id');
                 const min = parseFloat(dom.getAttribute('min'));
                 const max = parseFloat(dom.getAttribute('max'));
@@ -52,16 +52,18 @@ def main(win: Window):
                 let newValue = parseFloat(dom.value.replace(/\$/, ''));
                 const step = action === 'set' ? newValue: parseFloat(dom.getAttribute('step')) || 1;
 
-                if (isNaN(parseFloat(newValue))) {
-                    newValue = oldValue;
-                } else {
-                    newValue = await pywebview.api.change_amount(name, step, action);
-                    newValue = newValue < min ? min : newValue > max ? max : newValue;
-                }
-
-                dom.dataset.value = newValue;
-                dom.value = (dom.dataset.prepend || '') + newValue + (dom.dataset.append || '');
-                await updateChart();
+                setTimeout(async () => {
+                    if (isNaN(parseFloat(newValue))) {
+                        newValue = oldValue;
+                    } else {
+                        newValue = await pywebview.api.change_amount(name, step, action);
+                        newValue = newValue < min ? min : newValue > max ? max : newValue;
+                    }
+    
+                    dom.dataset.value = newValue;
+                    dom.value = (dom.dataset.prepend || '') + newValue + (dom.dataset.append || '');
+                    await updateChart();
+                }, 0);
             };
             
             const selectedFund = await pywebview.api.get_selected_fund();
@@ -83,6 +85,7 @@ def main(win: Window):
             estimatedReturnSelector.addEventListener('change', function(){ changeHandler(this) });
             contributionSelector.addEventListener('change', function(){ changeHandler(this) });
             investment_timespan.addEventListener('change', async function () {
+            
                 changeHandler(this);
                 investment_timespan_text.innerHTML = this.value + ' years';
                 await updateChart();
@@ -193,4 +196,4 @@ def main(win: Window):
 
 if __name__ == '__main__':
     window = webview.create_window('Financial Calculator', 'web/index.html', js_api=Calculator(), height=800, width=1100)
-    webview.start(main, window, gui='cef', debug=True)
+    webview.start(main, window)

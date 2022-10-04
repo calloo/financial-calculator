@@ -1,7 +1,8 @@
 #!/bin/bash
-sudo apt-get update -y
-sudo apt-get --yes install libgirepository1.0-dev gcc libcairo2-dev pkg-config python3-dev gir1.2-gtk-3.0 libgl1-mesa-glx qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
-sudo apt-get --yes install pycharm-community --classic
+sudo apt-get update && sudo apt-get dist-upgrade -y
+sudo apt-get install devscripts debhelper cmake libldap2-dev libgtkmm-3.0-dev libarchive-dev libcurl4-openssl-dev intltool
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.0 libgirepository1.0-dev -y
+sudo apt install code -y
 
 DIR="venv"
 if [[ ! -d "$DIR" ]]; then
@@ -13,3 +14,4 @@ fi
 source venv/bin/activate
 pip3 install --upgrade pip
 pip install -r requirements.txt
+code .

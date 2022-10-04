@@ -14,7 +14,7 @@ class Calculator:
     contribution_period: int = 12
     compound_period: int = 12
     sprite: Sprite = Sprite.STARWARS
-    goal: float = 1000
+    goal: float = 1000000
 
     def get_sprite(self):
         """

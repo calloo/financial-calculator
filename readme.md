@@ -1,10 +1,8 @@
 # Financial Calculator Project
 
-### Setup Instructions
-1. Install python 3.8
-2. Run setup.sh
-3. activate environment then run main.py
-   source venv/bin/activate
-   python main.py
-
-
+### Setup Instructions on Raspberry Pi
+1. Run setup.sh
+2. In VSCode, install extension "Python extension pack"
+3. Open VSCode terminal by pressing ctrl + ` (the tilde button)
+4. Activate environment by running "source venv/bin/activate"
+5. Launch program by running "python main.py"
